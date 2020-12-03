@@ -1,0 +1,75 @@
+# https://coderwall.com/p/-k_93g/mac-os-x-valueerror-unknown-locale-utf-8-in-python
+# export LC_ALL=en_US.UTF-8
+# export LANG=en_US.UTF-8
+export LANG=pt_BR.UTF-8
+export LC_ALL=pt_BR.UTF-8
+
+# https://justin.abrah.ms/dotfiles/zsh.html#sec-2-7
+
+
+export HISTCONTROL=erasedups  # Ignore duplicate entries in history
+export HISTFILE=~/.histfile
+export HISTSIZE=10000         # Increases size of history
+export SAVEHIST=10000
+export HISTIGNORE="&:ls:ll:la:l.:pwd:exit:clear:clr:[bf]g"
+
+SHOPT=`which shopt`
+if [ -z SHOPT ]; then
+  shopt -s histappend        # Append history instead of overwriting
+  shopt -s cdspell           # Correct minor spelling errors in cd command
+  shopt -s dotglob           # includes dotfiles in pathname expansion
+  shopt -s checkwinsize      # If window size changes, redraw contents
+  shopt -s cmdhist           # Multiline commands are a single command in history.
+  shopt -s extglob           # Allows basic regexps in bash.
+fi
+set ignoreeof on           # Typing EOF (CTRL+D) will not exit interactive sessions
+
+if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
+
+# Support for bash
+PROMPT_COMMAND='prompt'
+
+# Mirrored support for zsh. See: https://superuser.com/questions/735660/whats-the-zsh-equivalent-of-bashs-prompt-command/735969#735969 
+precmd() { eval "$PROMPT_COMMAND" }
+
+function prompt()
+{
+    if [ "$PWD" != "$MYOLDPWD" ]; then
+        MYOLDPWD="$PWD"
+        test -e .venv && workon `cat .venv`
+    fi
+}
+
+# Automatic options added
+setopt appendhistory autocd nomatch autopushd pushdignoredups promptsubst
+unsetopt beep
+bindkey -e
+zstyle :compinstall filename '/home/jlilly/.zshrc'
+# end automatic options
+
+# Make prompt prettier
+autoload -U promptinit
+promptinit
+
+
+# . ~/.shell/host_specific
+
+if [ -f ~/.bash_local ]; then
+    . ~/.bash_local
+fi
+
+if [ -e "`which brew`" ]; then
+    [[ -s $(brew --prefix)/etc/profile.d/autojump.sh ]] && . $(brew --prefix)/etc/profile.d/autojump.sh
+fi
+[[ -s /usr/share/autojump/autojump.zsh ]] && . /usr/share/autojump/autojump.zsh || \
+  [[ -s /usr/share/autojump/autojump.sh ]] && . /usr/share/autojump/autojump.sh
+
+
+# Run on new shell
+have_fortune=`which fortune`
+if [ -e have_fortune ]; then
+    echo ""
+    fortune
+    echo ""
+fi
+
